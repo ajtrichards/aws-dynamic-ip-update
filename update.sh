@@ -24,7 +24,6 @@ yellow "*******************************************************"
 echo ""
 
 # Settings
-CONFIG_REGION="eu-west-1"
 CONFIG_PORT="22"
 
 echo "Fetching your IP Address from http://checkip.amazonaws.com"
@@ -38,10 +37,10 @@ cat /dev/null > /tmp/ec2.info
 
 tmpFile="/tmp/ec2.info"
 
-ec2Info=`ec2-describe-group --region eu-west-1 > $tmpFile`
+ec2Info=`aws ec2 describe-security-groups > $tmpFile`
 
-sec_groups=`cat $tmpFile | grep GROUP | cut -f4`
-numOfGroups=`cat $tmpFile | grep GROUP | wc -l`
+sec_groups=`cat $tmpFile | grep SECURITYGROUPS | cut -f4`
+numOfGroups=`cat $tmpFile | grep SECURITYGROUPS | wc -l`
 
 echo ""
 echo "Your IP address is: $IP_ADDR"
@@ -55,8 +54,8 @@ do
      echo "Attempting to change Security Group: `tput setaf 2`$security_group`tput setaf 7`"
      echo ""
 
-     arg_string="--region $CONFIG_REGION $security_group  -p $CONFIG_PORT -s $IP_ADDR"
+     arg_string="--group-name $security_group --protocol tcp --port $CONFIG_PORT --cidr $IP_ADDR"
 
-     ec2-authorize $arg_string
+     aws ec2 authorize-security-group-ingress $arg_string
 
 done
